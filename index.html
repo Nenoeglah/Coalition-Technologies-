@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jessica Taylor's Information</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Tech.Care</h1>
+            <h1>Jessica Taylor's Information</h1>
+        </header>
+        <img id="profile-picture" src="" alt="Profile Picture">
+        <div id="patient-info">
+            <div id="patient-details">
+                <p id="patient-name"></p>
+                <p id="patient-gender"></p>
+                <p id="patient-age"></p>
+                <p id="patient-dob"></p>
+                <p id="patient-phone"></p>
+                <p id="patient-emergency-contact"></p>
+                <p id="patient-insurance"></p>
+            </div>
+        </div>
+        <div id="diagnosis-history">
+            <h3>Diagnosis History</h3>
+            <div id="history-list"></div>
+        </div>
+        <div id="diagnostic-list">
+            <h3>Diagnostic List</h3>
+            <div id="diagnostic-table-container"></div>
+        </div>
+        <div id="lab-results">
+            <h3>Lab Results</h3>
+            <ul id="lab-results-list"></ul>
+        </div>
+    </div>
+
+    <script>
+        const apiUrl = 'https://fedskillstest.coalitiontechnologies.workers.dev';
+        const username = 'coalition';
+        const password = 'skills-test';
+
+        const authString = `${username}:${password}`;
+        const encodedAuth = btoa(authString);
+
+        fetch(apiUrl, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Basic ${encodedAuth}`
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            const jessicaTaylor = data.find(patient => patient.name === 'Jessica Taylor');
+
+            if (!jessicaTaylor) {
+                throw new Error('Jessica Taylor not found in patient data');
+            }
+
+            document.getElementById('profile-picture').src = jessicaTaylor.profile_picture;
+            document.getElementById('patient-name').textContent = `Name: ${jessicaTaylor.name}`;
+            document.getElementById('patient-gender').textContent = `Gender: ${jessicaTaylor.gender}`;
+            document.getElementById('patient-age').textContent = `Age: ${jessicaTaylor.age}`;
+            document.getElementById('patient-dob').textContent = `Date of Birth: ${jessicaTaylor.date_of_birth}`;
+            document.getElementById('patient-phone').textContent = `Phone: ${jessicaTaylor.phone_number}`;
+            document.getElementById('patient-emergency-contact').textContent = `Emergency Contact: ${jessicaTaylor.emergency_contact}`;
+            document.getElementById('patient-insurance').textContent = `Insurance: ${jessicaTaylor.insurance_type}`;
+
+            const marchDiagnosis = jessicaTaylor.diagnosis_history.find(history => history.month === 'March' && history.year === 2024);
+            if (marchDiagnosis) {
+                const historyList = document.getElementById('history-list');
+                const historyItem = document.createElement('div');
+                historyItem.classList.add('diagnosis-item');
+                historyItem.innerHTML = `
+                    <h4>${marchDiagnosis.month} ${marchDiagnosis.year}</h4>
+                    <table>
+                        <tr>
+                            <th>Measurement</th>
+                            <th>Value</th>
+                            <th>Level</th>
+                        </tr>
+                        <tr>
+                            <td>Blood Pressure (Systolic)</td>
+                            <td>${marchDiagnosis.blood_pressure.systolic.value}</td>
+                            <td>${marchDiagnosis.blood_pressure.systolic.levels}</td>
+                        </tr>
+                        <tr>
+                            <td>Blood Pressure (Diastolic)</td>
+                            <td>${marchDiagnosis.blood_pressure.diastolic.value}</td>
+                            <td>${marchDiagnosis.blood_pressure.diastolic.levels}</td>
+                        </tr>
+                        <tr>
+                            <td>Heart Rate</td>
+                            <td>${marchDiagnosis.heart_rate.value}</td>
+                            <td>${marchDiagnosis.heart_rate.levels}</td>
+                        </tr>
+                        <tr>
+                            <td>Respiratory Rate</td>
+                            <td>${marchDiagnosis.respiratory_rate.value}</td>
+                            <td>${marchDiagnosis.respiratory_rate.levels}</td>
+                        </tr>
+                        <tr>
+                            <td>Temperature</td>
+                            <td>${marchDiagnosis.temperature.value}</td>
+                            <td>${marchDiagnosis.temperature.levels}</td>
+                        </tr>
+                    </table>
+                `;
+                historyList.appendChild(historyItem);
+            } else {
+                console.error('March 2024 diagnosis history not found for Jessica Taylor');
+            }
+
+            const diagnosticTableContainer = document.getElementById('diagnostic-table-container');
+            const diagnosticTable = document.createElement('table');
+            diagnosticTable.innerHTML = `
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                </tr>
+            `;
+            jessicaTaylor.diagnostic_list.forEach(diagnostic => {
+                const diagnosticRow = document.createElement('tr');
+                diagnosticRow.innerHTML = `
+                    <td>${diagnostic.name}</td>
+                    <td>${diagnostic.description}</td>
+                    <td>${diagnostic.status}</td>
+                `;
+                diagnosticTable.appendChild(diagnosticRow);
+            });
+            diagnosticTableContainer.appendChild(diagnosticTable);
+
+            const labResultsList = document.getElementById('lab-results-list');
+            jessicaTaylor.lab_results.forEach(result => {
+                const resultItem = document.createElement('li');
+                resultItem.textContent = result;
+                labResultsList.appendChild(resultItem);
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    </script>
+</body>
+</html>
